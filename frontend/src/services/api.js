@@ -1,4 +1,3 @@
-// src/services/api.js
 import categoryMap from '../assets/category_map.json';
 import branchMap from '../assets/branch_map.json';
 import collegeMap from '../assets/college_name_map.json';
