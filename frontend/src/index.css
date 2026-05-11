@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-900: #134e4a;
+
+  --color-brand-light: #34d399; /* Emerald 400 */
+  --color-brand-base: #10b981; /* Emerald 500 */
+  --color-brand-dark: #059669; /* Emerald 600 */
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 165 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 165 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 165 20% 10%;
+    --primary: 160 84% 39%; /* Emerald */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 165 20% 94%;
+    --secondary-foreground: 165 20% 15%;
+    --muted: 165 20% 94%;
+    --muted-foreground: 165 15% 45%;
+    --accent: 165 20% 94%;
+    --accent-foreground: 165 20% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 165 20% 88%;
+    --input: 165 20% 88%;
+    --ring: 160 84% 39%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 165 40% 4%;
+    --foreground: 165 20% 96%;
+    --card: 165 30% 6%;
+    --card-foreground: 165 20% 96%;
+    --popover: 165 30% 6%;
+    --popover-foreground: 165 20% 96%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 165 30% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 165 30% 12%;
+    --muted-foreground: 165 15% 65%;
+    --accent: 165 30% 12%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 165 30% 16%;
+    --input: 165 30% 16%;
+    --ring: 160 84% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] font-sans antialiased selection:bg-brand-base selection:text-white;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 8px 32px hsl(160 84% 39% / 0.05), 0 1px 0 hsl(var(--border) / 0.3);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid hsl(160 84% 39% / 0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-base/30 rounded-full hover:bg-brand-base/50 transition-colors;
+}
