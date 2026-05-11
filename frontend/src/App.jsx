@@ -11,7 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/predictor" element={<PredictorLayout />} />
-        <Route path="/simulator/*" element={<SimulatorLayout />} />
+        <Route path="/simulator" element={<SimulatorLayout />} />
         <Route path="/colleges" element={<CollegesList />} />
         <Route path="/colleges/:code" element={<CollegeDetail />} />
       </Routes>

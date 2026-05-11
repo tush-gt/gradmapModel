@@ -4,6 +4,8 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { TeachTooltip } from '../common/TeachTooltip';
 import { useAppStore } from '../../store/useAppStore';
+import { CATEGORIES } from '../../services/api';
+import { getCategoryMetadata } from '../../utils/normalization';
 import { User, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const Field = ({ label, hint, children }) => (
@@ -26,6 +28,13 @@ export const S2_Profile = () => {
     updateProfile(local);
     setCurrentStep(3);
   };
+
+  // Filter categories based on gender
+  const filteredCategories = CATEGORIES.filter(cat => {
+    const meta = getCategoryMetadata(cat);
+    if (local.gender === 'Female') return true; // Females can take General (All) or Female seats
+    return meta.gender === 'All'; // Males can only take General (All) seats
+  });
 
   return (
     <div className="space-y-6">
@@ -69,12 +78,9 @@ export const S2_Profile = () => {
 
           <Field label="Category" hint="Only categories matching your gender are shown.">
             <Select name="category" value={local.category} onChange={handleChange} className="h-12 border-brand-base/20 focus-visible:ring-brand-base/40">
-              <option value="GOPENH">GOPENH — Open (General)</option>
-              {local.gender === 'Female' && <option value="LOPENH">LOPENH — Open (Ladies)</option>}
-              <option value="GOBCH">GOBCH — OBC (General)</option>
-              {local.gender === 'Female' && <option value="LOBCH">LOBCH — OBC (Ladies)</option>}
-              <option value="GOSC">GOSC — SC (General)</option>
-              {local.gender === 'Female' && <option value="LOSC">LOSC — SC (Ladies)</option>}
+              {filteredCategories.map(cat => (
+                <option key={cat} value={cat}>{cat} — {getCategoryMetadata(cat).seat_pool}</option>
+              ))}
             </Select>
           </Field>
 
@@ -112,3 +118,4 @@ export const S2_Profile = () => {
     </div>
   );
 };
+

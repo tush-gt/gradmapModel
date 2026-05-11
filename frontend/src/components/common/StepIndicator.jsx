@@ -1,17 +1,18 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../utils/cn';
 import { Check } from 'lucide-react';
 
 const stepData = [
-  { id: 1, label: 'Welcome', icon: '👋' },
-  { id: 2, label: 'Profile', icon: '👤' },
-  { id: 3, label: 'Documents', icon: '📄' },
-  { id: 4, label: 'Option Form', icon: '📋' },
-  { id: 5, label: 'Allotment', icon: '🎯' },
-  { id: 6, label: 'Decision', icon: '⚖️' },
-  { id: 7, label: 'Round Loop', icon: '🔄' },
-  { id: 8, label: 'Confirmed', icon: '🎓' },
+  { id: 1, label: 'Welcome' },
+  { id: 2, label: 'Profile' },
+  { id: 3, label: 'Documents' },
+  { id: 4, label: 'Option Form' },
+  { id: 5, label: 'Allotment' },
+  { id: 6, label: 'Decision' },
+  { id: 7, label: 'Round Loop' },
+  { id: 8, label: 'Confirmed' },
 ];
 
 export const StepIndicator = () => {
@@ -20,82 +21,55 @@ export const StepIndicator = () => {
 
   return (
     <div className="w-full">
-      {/* Progress bar */}
-      <div className="relative w-full h-1.5 bg-brand-base/10 rounded-full mb-6 overflow-hidden">
-        <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-brand-base to-cyan-400 rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${((currentStep - 1) / (stepData.length - 1)) * 100}%` }}
-        />
-        <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-brand-base/40 to-cyan-400/40 rounded-full transition-all duration-700 ease-out blur-sm"
-          style={{ width: `${((currentStep - 1) / (stepData.length - 1)) * 100}%` }}
+      {/* Progress bar container */}
+      <div className="relative w-full h-2 bg-emerald-500/10 rounded-full mb-8 overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${((currentStep - 1) / (stepData.length - 1)) * 100}%` }}
+          transition={{ duration: 0.8, ease: "circOut" }}
+          className="absolute left-0 top-0 h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full z-10"
         />
       </div>
 
-      {/* Steps */}
-      <div className="flex items-start overflow-x-auto pb-2 gap-0 scrollbar-none">
-        {stepData.map((step, index) => {
+      {/* Steps List */}
+      <div className="flex items-start justify-between gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {stepData.map((step) => {
           const isCompleted = step.id < currentStep;
           const isCurrent = step.id === currentStep;
-          const isUpcoming = step.id > currentStep;
-
+          
           return (
-            <React.Fragment key={step.id}>
-              <div
-                className={cn(
-                  'flex flex-col items-center gap-2 min-w-[80px] relative group',
-                  isCompleted ? 'cursor-pointer' : 'cursor-default'
-                )}
-                onClick={() => isCompleted && setCurrentStep(step.id)}
-              >
-                {/* Circle */}
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center text-base font-bold transition-all duration-300 border-2 relative z-10',
-                    isCompleted
-                      ? 'bg-brand-base border-brand-base text-white shadow-lg shadow-brand-base/40'
-                      : isCurrent
-                      ? 'border-brand-base text-brand-base bg-brand-base/10 shadow-lg shadow-brand-base/30'
-                      : 'border-border text-muted-foreground bg-muted/30'
-                  )}
-                >
-                  {isCurrent && (
-                    <span className="absolute inset-0 rounded-full bg-brand-base/20 animate-ping" />
-                  )}
-                  {isCompleted ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <span className="text-sm">{step.id}</span>
-                  )}
-                </div>
-
-                {/* Label */}
-                <span
-                  className={cn(
-                    'text-xs whitespace-nowrap font-medium transition-colors',
-                    isCurrent
-                      ? 'text-brand-base'
-                      : isCompleted
-                      ? 'text-muted-foreground group-hover:text-brand-base'
-                      : 'text-muted-foreground/50'
-                  )}
-                >
-                  {step.label}
-                </span>
-              </div>
-
-              {/* Connector line */}
-              {index < stepData.length - 1 && (
-                <div className="flex-1 h-[2px] mt-5 mx-1 min-w-[16px]">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-500',
-                      isCompleted ? 'bg-brand-base' : 'bg-border/50'
-                    )}
-                  />
-                </div>
+            <div
+              key={step.id}
+              className={cn(
+                'flex flex-col items-center gap-2 min-w-[70px] transition-all',
+                isCompleted ? 'cursor-pointer' : 'cursor-default'
               )}
-            </React.Fragment>
+              onClick={() => isCompleted && setCurrentStep(step.id)}
+            >
+              <motion.div
+                animate={{
+                  scale: isCurrent ? 1.1 : 1,
+                  backgroundColor: isCompleted ? '#10b981' : (isCurrent ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)'),
+                }}
+                className={cn(
+                  'w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black transition-all border-2',
+                  isCompleted ? 'border-emerald-600 text-white' : isCurrent ? 'border-emerald-500 text-emerald-400' : 'border-white/5 text-muted-foreground/30'
+                )}
+              >
+                <AnimatePresence mode="wait">
+                  {isCompleted ? (
+                    <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                      <Check className="w-4 h-4 stroke-[3px]" />
+                    </motion.div>
+                  ) : (
+                    <motion.span key="number">{step.id}</motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+              <span className={cn('text-[9px] uppercase font-black tracking-tighter text-center', isCurrent ? 'text-emerald-400' : 'text-muted-foreground/40')}>
+                {step.label}
+              </span>
+            </div>
           );
         })}
       </div>

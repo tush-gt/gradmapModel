@@ -1,55 +1,58 @@
 // src/services/api.js
+import categoryMap from '../assets/category_map.json';
+import branchMap from '../assets/branch_map.json';
+import collegeMap from '../assets/college_name_map.json';
+import { normalizeBranch, getCategoryMetadata } from '../utils/normalization';
 
-const mockColleges = [
-  { code: '3012', name: 'VJTI Mumbai', district: 'Mumbai', type: 'Government Aided' },
-  { code: '3014', name: 'Sardar Patel Institute of Technology (SPIT)', district: 'Mumbai', type: 'Un-Aided Autonomous' },
-  { code: '3181', name: 'K. J. Somaiya College of Engineering', district: 'Mumbai', type: 'Un-Aided Autonomous' },
-  { code: '3199', name: 'Dwarkadas J. Sanghvi College of Engineering', district: 'Mumbai', type: 'Un-Aided' },
-  { code: '6006', name: 'College of Engineering Pune (COEP)', district: 'Pune', type: 'Government Autonomous' },
-  { code: '6271', name: 'Pune Institute of Computer Technology (PICT)', district: 'Pune', type: 'Un-Aided' },
-  { code: '6273', name: 'BRACT\'S Vishwakarma Institute of Technology (VIT)', district: 'Pune', type: 'Un-Aided Autonomous' },
-  { code: '6004', name: 'Government College of Engineering, Pune', district: 'Pune', type: 'Government' },
-  { code: '4004', name: 'Government College of Engineering, Amravati', district: 'Amravati', type: 'Government Autonomous' },
-  { code: '5004', name: 'Government College of Engineering, Aurangabad', district: 'Aurangabad', type: 'Government Autonomous' },
-  { code: '2008', name: 'Government College of Engineering, Jalgaon', district: 'Jalgaon', type: 'Government' },
-  { code: '6005', name: 'Government College of Engineering, Karad', district: 'Satara', type: 'Government Autonomous' },
-  { code: '1002', name: 'Government College of Engineering, Nagpur', district: 'Nagpur', type: 'Government' },
-  { code: '4005', name: 'Shri Sant Gajanan Maharaj College of Engineering', district: 'Buldhana', type: 'Un-Aided' },
-  { code: '3009', name: 'Institute of Chemical Technology (ICT)', district: 'Mumbai', type: 'Government Aided' }
-];
+// Extract lists from assets
+export const COLLEGES = Object.keys(collegeMap['College Name -> Variations']).map((name, index) => ({
+  code: (1000 + index).toString(),
+  name: name,
+  district: name.split(',').pop().trim(), // Heuristic district extraction
+  type: name.includes('Government') ? 'Government' : 'Un-Aided'
+})).slice(0, 100); // Take first 100 for performance
 
-const mockBranches = ['Computer Engineering', 'Information Technology', 'Electronics and Telecommunication', 'Mechanical Engineering', 'Civil Engineering'];
+export const CATEGORIES = Object.keys(categoryMap.categories);
+export const BRANCHES = Object.keys(branchMap.branches);
 
-// Generate consistent mock data on load
+// Generate consistent semi-real mock data on load
 const generateMockData = () => {
   const data = [];
-  mockColleges.forEach(college => {
-    mockBranches.forEach(branch => {
-      // Base cutoff varies by college prestige and branch
-      let baseCutoff = 90;
-      if (college.code === '6006' || college.code === '3012') baseCutoff = 98;
-      if (college.code === '6271' || college.code === '3014') baseCutoff = 96;
-      if (branch === 'Computer Engineering') baseCutoff += 1.5;
-      if (branch === 'Information Technology') baseCutoff += 1.0;
-      if (branch === 'Mechanical Engineering') baseCutoff -= 3.0;
-      if (branch === 'Civil Engineering') baseCutoff -= 5.0;
+  // For performance, we only generate a subset of the full matrix
+  const topColleges = COLLEGES.slice(0, 50);
+  const coreBranches = BRANCHES.slice(0, 10);
+  const coreCategories = CATEGORIES.slice(0, 20);
 
-      const categories = ['GOPENH', 'LOPENH', 'GOBCH', 'LOBCH', 'GOSC', 'LOSC'];
+  topColleges.forEach(college => {
+    coreBranches.forEach(branch => {
+      let baseCutoff = 80 + (Math.random() * 15); // Random baseline
       
-      categories.forEach(category => {
-        let catMod = 0;
-        if (category.includes('OBC')) catMod = -1.5;
-        if (category.includes('SC')) catMod = -4.0;
-        if (category.startsWith('L')) catMod = -0.5; // Ladies quota usually slightly lower or similar
+      // Prestige modifiers
+      if (college.name.includes('COEP') || college.name.includes('VJTI')) baseCutoff = 98;
+      if (college.name.includes('Institute of Computer Technology')) baseCutoff = 96;
+      
+      // Branch modifiers
+      if (branch.includes('Computer')) baseCutoff += 2;
+      if (branch.includes('Information Technology')) baseCutoff += 1.5;
+      if (branch.includes('Mechanical')) baseCutoff -= 4;
+      if (branch.includes('Civil')) baseCutoff -= 6;
 
-        ['2022', '2023', '2024', '2025'].forEach(year => {
-          let yearMod = (parseInt(year) - 2024) * 0.2; // Slight inflation over years
+      coreCategories.forEach(category => {
+        const meta = getCategoryMetadata(category);
+        let catMod = 0;
+        if (meta.caste_group === 'OBC') catMod = -1.5;
+        if (meta.caste_group === 'SC') catMod = -5;
+        if (meta.caste_group === 'ST') catMod = -12;
+        if (meta.gender === 'Female') catMod -= 0.5;
+
+        ['2022', '2023', '2024'].forEach(year => {
+          let yearMod = (parseInt(year) - 2024) * 0.3;
           
           [1, 2, 3].forEach(round => {
-            let roundMod = (round - 1) * -0.5; // Cutoffs drop in later rounds
+            let roundMod = (round - 1) * -0.8;
             
             let finalCutoff = baseCutoff + catMod + yearMod + roundMod + (Math.random() * 0.4 - 0.2);
-            finalCutoff = Math.min(Math.max(finalCutoff, 40), 99.99); // bounds
+            finalCutoff = Math.min(Math.max(finalCutoff, 30), 99.99);
 
             data.push({
               college_code: college.code,
@@ -72,58 +75,52 @@ const generateMockData = () => {
 
 const mockDatabase = generateMockData();
 
-// Delayed response to simulate network
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const api = {
   // GET /predict
   async predict({ percentile, category, year = '2024', round = 3, districts = [], branches = [] }) {
-    await delay(600);
+    await delay(800);
     
-    // Filter for specific year and round
     let results = mockDatabase.filter(d => d.year === year.toString() && d.round === round);
     
-    // STRICT RULE: GOPENH users must NOT see LOPENH seats
+    // STRICT RULE: Category must match exactly
     results = results.filter(d => d.category === category);
     
-    // Optional filters
     if (districts.length > 0) {
-      results = results.filter(d => districts.includes(d.district));
+      results = results.filter(d => districts.some(dist => d.district.includes(dist)));
     }
     if (branches.length > 0) {
       results = results.filter(d => branches.includes(d.branch_name));
     }
 
-    // Process and rank
     const ranked = results.map(d => {
       const delta = parseFloat((percentile - d.cutoff).toFixed(2));
       let status = 'Reach';
-      if (delta >= 2.0) status = 'Safe';
-      else if (delta >= -2.0) status = 'Moderate';
+      if (delta >= 3.0) status = 'Safe';
+      else if (delta >= -1.0) status = 'Moderate';
 
       return {
         ...d,
         delta,
         status,
-        probability: delta >= 0 ? Math.min(99, 50 + (delta * 10)) : Math.max(1, 50 + (delta * 10))
+        probability: Math.min(99, Math.max(1, 50 + (delta * 12)))
       };
     });
 
-    // Sort by cutoff descending
     return ranked.sort((a, b) => b.cutoff - a.cutoff);
   },
 
   // GET /trends
   async getTrends({ institute_code, branch_name, category }) {
-    await delay(300);
+    await delay(400);
     const trends = mockDatabase.filter(d => 
       d.college_code === institute_code && 
       d.branch_name === branch_name && 
       d.category === category
     );
     
-    // Format for Recharts (Group by year)
-    const formatted = ['2022', '2023', '2024', '2025'].map(year => {
+    return ['2022', '2023', '2024'].map(year => {
       const yearData = trends.filter(t => t.year === year);
       return {
         year,
@@ -132,27 +129,23 @@ export const api = {
         round3: yearData.find(t => t.round === 3)?.cutoff || null,
       };
     });
-
-    return formatted;
   },
 
   // GET /colleges
   async getColleges() {
-    await delay(200);
-    return mockColleges;
+    await delay(300);
+    return COLLEGES;
   },
 
   // POST /simulate
   async simulateRound({ profile, optionForm, currentRound }) {
-    await delay(1200); // Feel like it's calculating
+    await delay(1500);
     
-    // Simulator logic: Find the highest preference where user percentile >= cutoff
     let allottedSeat = null;
     let rank = null;
 
     for (let i = 0; i < optionForm.length; i++) {
       const choice = optionForm[i];
-      // Mock cutoff fetch for this specific choice, round, category
       const cutoffData = mockDatabase.find(d => 
         d.college_code === choice.college_code && 
         d.branch_name === choice.branch_name && 
@@ -161,7 +154,7 @@ export const api = {
         d.round === currentRound
       );
 
-      const requiredCutoff = cutoffData ? cutoffData.cutoff : 90; // Fallback
+      const requiredCutoff = cutoffData ? cutoffData.cutoff : 99; // Assume very high if missing
 
       if (profile.percentile >= requiredCutoff) {
         allottedSeat = {
@@ -170,9 +163,8 @@ export const api = {
           round: currentRound,
           preference_number: i + 1,
         };
-        // Generate mock merit rank
-        rank = Math.floor(100000 - (profile.percentile * 1000));
-        break; // Stop at highest preference
+        rank = Math.floor(120000 - (profile.percentile * 1200));
+        break;
       }
     }
 
@@ -181,8 +173,9 @@ export const api = {
       seat: allottedSeat,
       merit_rank: rank,
       message: allottedSeat 
-        ? (allottedSeat.preference_number === 1 ? 'Admission is automatically confirmed (Auto-Freeze).' : 'Seat Allotted!')
-        : `Seat not allotted in Round ${currentRound}. You remain eligible for the next round.`
+        ? (allottedSeat.preference_number === 1 ? 'Auto-Freeze triggered.' : 'Seat Allotted!')
+        : `No seat allotted in Round ${currentRound}.`
     };
   }
 };
+

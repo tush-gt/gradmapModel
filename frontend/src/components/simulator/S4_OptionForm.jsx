@@ -7,7 +7,7 @@ import { api } from '../../services/api';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, X, ArrowUp, ArrowDown, Lock, AlertCircle } from 'lucide-react';
+import { GripVertical, X, ArrowUp, ArrowDown, Lock, AlertCircle, Search as SearchIcon } from 'lucide-react';
 
 const SortableItem = ({ id, option, index, onRemove, onMoveUp, onMoveDown, isFirst, isLast }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -50,7 +50,9 @@ export const S4_OptionForm = () => {
   const setCurrentStep = useAppStore(state => state.setCurrentStep);
 
   const [availableOptions, setAvailableOptions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -58,10 +60,11 @@ export const S4_OptionForm = () => {
   );
 
   useEffect(() => {
-    // Fetch mock available colleges for this category
+    setIsLoading(true);
+    // Fetch real available colleges for this category using a very high percentile to see many options
     api.predict({ percentile: 100, category: profile.category }).then(data => {
-      // Just take top 15 as mock available options
-      setAvailableOptions(data.slice(0, 15));
+      setAvailableOptions(data);
+      setIsLoading(false);
     });
   }, [profile.category]);
 
@@ -94,8 +97,13 @@ export const S4_OptionForm = () => {
 
   const handleLock = () => {
     setShowConfirmModal(false);
-    setCurrentStep(5); // Move to Allotment
+    setCurrentStep(5);
   };
+
+  const filteredAvailable = availableOptions.filter(opt => 
+    opt.college_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    opt.branch_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -109,18 +117,39 @@ export const S4_OptionForm = () => {
         <Card className="glass h-[600px] flex flex-col">
           <div className="p-4 border-b border-border bg-muted/30">
             <h3 className="font-semibold text-lg">Available Choices</h3>
-            <p className="text-sm text-muted-foreground">Filtered for {profile.category}</p>
+            <p className="text-sm text-muted-foreground mb-4">Filtered for {profile.category}</p>
+            
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search college or branch..."
+                className="w-full pl-9 pr-4 py-2 bg-background/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-base/40"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
           <div className="p-4 overflow-y-auto flex-1 space-y-2">
-            {availableOptions.map((opt, idx) => (
-              <div key={idx} className="flex justify-between items-center p-3 border rounded-lg bg-card hover:border-brand-base transition-colors">
-                <div className="min-w-0 pr-2">
-                  <h4 className="font-medium text-sm truncate" title={opt.college_name}>{opt.college_name}</h4>
-                  <p className="text-xs text-muted-foreground truncate">{opt.branch_name}</p>
-                </div>
-                <Button size="sm" variant="secondary" onClick={() => handleAdd(opt)} className="shrink-0">Add</Button>
+            {isLoading ? (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                Loading options...
               </div>
-            ))}
+            ) : filteredAvailable.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                No matching options found.
+              </div>
+            ) : (
+              filteredAvailable.map((opt, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 border rounded-lg bg-card hover:border-brand-base transition-colors group">
+                  <div className="min-w-0 pr-2">
+                    <h4 className="font-medium text-sm truncate" title={opt.college_name}>{opt.college_name}</h4>
+                    <p className="text-xs text-muted-foreground truncate">{opt.branch_name}</p>
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => handleAdd(opt)} className="shrink-0 group-hover:bg-brand-base group-hover:text-white">Add</Button>
+                </div>
+              ))
+            )}
           </div>
         </Card>
 
@@ -163,7 +192,7 @@ export const S4_OptionForm = () => {
           <div className="p-4 border-t border-border bg-card flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => setCurrentStep(3)}>Back</Button>
             <Button 
-              className="flex-1 gap-2" 
+              className="flex-1 gap-2 bg-brand-base hover:bg-brand-dark border-0 text-white" 
               onClick={() => setShowConfirmModal(true)}
               disabled={optionForm.length === 0}
             >
@@ -195,3 +224,4 @@ export const S4_OptionForm = () => {
     </div>
   );
 };
+
