@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { GraduationCap, MapPin, ArrowLeft, TrendingUp, BarChart2, PieChart as PieIcon, Loader2, Sparkles, Building2, Calendar, Users, Award } from 'lucide-react';
+import { GraduationCap, MapPin, ArrowLeft, TrendingUp, BarChart2, PieChart as PieIcon, Loader2, Sparkles, Building2, Calendar, Users, Award, Filter } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { Button } from '../common/Button';
 
@@ -447,5 +447,3 @@ export const CollegeDetail = () => {
     </div>
   );
 };
-
-

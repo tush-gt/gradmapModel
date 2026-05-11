@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
+import { StepIndicator } from '../common/StepIndicator';
 import { S1_Welcome } from './S1_Welcome';
 import { S2_Profile } from './S2_Profile';
 import { S3_Documents } from './S3_Documents';
@@ -10,7 +11,6 @@ import { S6_Decision } from './S6_Decision';
 import { S8_Confirmed } from './S8_Confirmed';
 import { Link } from 'react-router-dom';
 import { GraduationCap, ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
-// import { StepIndicator } from '../common/StepIndicator';
 
 export const SimulatorLayout = () => {
   const currentStep = useAppStore(state => state.currentStep);
@@ -81,18 +81,12 @@ export const SimulatorLayout = () => {
           <p className="text-muted-foreground text-lg font-medium">{sub}</p>
         </motion.div>
 
-        {/* Step indicator card - disabled for debugging */}
+        {/* Step indicator card */}
         <div className="glass-morphism rounded-[2.5rem] p-8 mb-12 border-white/5 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <Sparkles className="w-12 h-12 text-emerald-400" />
           </div>
-          <div className="h-4 bg-emerald-500/20 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-emerald-500" 
-              initial={{ width: 0 }}
-              animate={{ width: `${(currentStep / 8) * 100}%` }}
-            />
-          </div>
+          <StepIndicator />
         </div>
 
         {/* Step content */}

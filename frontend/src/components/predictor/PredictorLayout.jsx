@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendChartModal } from './TrendChartModal';
 import { api, CATEGORIES, BRANCHES } from '../../services/api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Loader2, ChevronRight, Target, TrendingUp, Activity, Search, Sparkles, Filter, Info, MapPin } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { Button } from '../common/Button';
@@ -11,6 +11,7 @@ import { Input } from '../common/Input';
 const DISTRICTS = ['Mumbai', 'Pune', 'Nashik', 'Nagpur', 'Aurangabad', 'Amravati', 'Satara', 'Jalgaon', 'Buldhana'];
 
 export const PredictorLayout = () => {
+  const navigate = useNavigate();
   const [percentile, setPercentile] = useState('');
   const [category, setCategory] = useState('GOPENH');
   const [district, setDistrict] = useState('');
@@ -249,7 +250,8 @@ export const PredictorLayout = () => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.05 }}
                           key={idx} 
-                          className="hover:bg-white/5 transition-colors group"
+                          className="hover:bg-white/5 transition-colors group cursor-pointer"
+                          onClick={() => navigate(`/colleges/${item.college_code}`)}
                         >
                           <td className="px-8 py-6">
                             <div className="font-black text-foreground group-hover:text-emerald-400 transition-colors">{item.college_name}</div>
@@ -282,7 +284,10 @@ export const PredictorLayout = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setTrendModal({ isOpen: true, instituteCode: item.college_code, branchName: item.branch_name, category: item.category })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTrendModal({ isOpen: true, instituteCode: item.college_code, branchName: item.branch_name, category: item.category });
+                              }}
                               className="text-emerald-400 hover:bg-emerald-400/10 group/btn"
                             >
                               <TrendingUp className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
